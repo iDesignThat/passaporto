@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Lilita+One&display=swap">
-<link rel="stylesheet" href="css/style.css?v=66">
+<link rel="stylesheet" href="css/style.css?v=68">
 </head>
 <body>
 <canvas id="cielo" aria-hidden="true"></canvas>
@@ -38,6 +38,7 @@
   <div class="setup-griglia" id="setup-griglia"></div>
   <div class="setup-piede">
     <span class="msg" id="setup-msg"></span>
+    <span class="msg solo-pad">Per scrivere: tieni premuto <span class="kbd pad-fisso" data-pad="Menu">Menu</span> e usa il cursore</span>
     <div style="display:flex;gap:1em;flex-wrap:wrap">
       <button class="btn" id="btn-riprendi" hidden>Riprendi la partita salvata</button>
       <button class="btn pieno" id="btn-via">Accendi la mappa <span class="kbd">↵</span></button>
@@ -90,8 +91,8 @@
     <span><span class="kbd pad-fisso">◀</span><span class="kbd pad-fisso">▶</span> direzione</span>
     <span><span class="kbd pad-fisso" data-pad="A">A</span><span class="kbd pad-fisso" data-pad="B">B</span><span class="kbd pad-fisso" data-pad="X">X</span><span class="kbd pad-fisso" data-pad="Y">Y</span> risposte</span>
     <span><span class="kbd pad-fisso" data-pad="LB">LB</span><span class="kbd pad-fisso" data-pad="RB">RB</span> carte aiuto</span>
-    <span><span class="kbd pad-fisso" data-pad="View">View</span> mappa</span>
-    <span><span class="kbd pad-fisso" data-pad="Menu">Menu</span> regole</span>
+    <span><span class="kbd pad-fisso" data-pad="Y">Y</span> mappa</span>
+    <span><span class="kbd pad-fisso" data-pad="X">X</span> regole</span>
     <span><span class="kbd pad-fisso" data-pad="A">A</span> sul tuo pad nei duelli</span>
   </div>
 </section>
@@ -151,15 +152,15 @@
 </div>
 <canvas id="coriandoli" hidden></canvas>
 
-<script src="js/cielo.js?v=66"></script>
-<script src="js/mappa.js?v=66"></script>
-<script src="js/domande.js?v=66"></script>
-<script src="js/domande-extra.js?v=66"></script>
-<script src="js/bandiere.js?v=66"></script>
-<script src="js/effetti.js?v=66"></script>
-<script src="js/battute.js?v=66"></script>
-<script src="js/ritratti.js?v=66"></script>
-<script src="js/avatar.js?v=66"></script>
-<script src="js/gioco.js?v=66"></script>
+<script src="js/cielo.js?v=68"></script>
+<script src="js/mappa.js?v=68"></script>
+<script src="js/domande.js?v=68"></script>
+<script src="js/domande-extra.js?v=68"></script>
+<script src="js/bandiere.js?v=68"></script>
+<script src="js/effetti.js?v=68"></script>
+<script src="js/battute.js?v=68"></script>
+<script src="js/ritratti.js?v=68"></script>
+<script src="js/avatar.js?v=68"></script>
+<script src="js/gioco.js?v=68"></script>
 </body>
 </html>

@@ -210,10 +210,12 @@
   // Ogni pulsante del pad diventa il tasto della tastiera che serve in quel momento.
   // Con due pad abbinati (schermata iniziale) nei duelli ognuno si prenota con il suo.
   const PAD = { abbinati: {}, ultimo: -1e9, modo: false, prima: {}, tenuto: {} };
-  // pulsanti standard: 0 A, 1 B, 2 X, 3 Y, 4 LB, 5 RB, 6 LT, 7 RT, 8 View, 9 Menu, 12-15 croce direzionale
+  // pulsanti standard: 0 A, 1 B, 2 X, 3 Y, 4 LB, 5 RB, 6 LT, 7 RT, 8 View, 9 Menu, 12-15 croce direzionale.
+  // View e Menu restano al browser dell'Xbox (tenuti premuti: schermo intero e cursore), quindi il gioco non li usa.
+  // Fuori dalle domande X apre le regole e Y la mappa.
   const TASTI_PAD = {
-    0: ['1', ' ', 's', 'Enter'], 1: ['2', 'n'], 2: ['3'], 3: ['4'],
-    4: ['5'], 5: ['6'], 6: ['Backspace'], 8: ['m'], 9: ['r'],
+    0: ['1', ' ', 's', 'Enter'], 1: ['2', 'n'], 2: ['3', 'r'], 3: ['4', 'm'],
+    4: ['5'], 5: ['6'], 6: ['Backspace'],
     12: ['ArrowUp'], 13: ['ArrowDown'], 14: ['ArrowLeft'], 15: ['ArrowRight'],
   };
   const haTasto = k => !!(tasti[k] || tasti[k.toLowerCase()]);
@@ -228,7 +230,11 @@
       if (g == null && b === 5) return 'p';
     }
     const lista = TASTI_PAD[b]; if (!lista) return null;
-    return lista.find(haTasto) || lista[lista.length - 1];
+    const k = lista.find(haTasto); if (k) return k;
+    const ultimo = lista[lista.length - 1];
+    // regole e mappa solo quando non c'è una domanda o un messaggio aperto
+    if ((ultimo === 'r' || ultimo === 'm') && $$('.velo').some(v => !v.hidden)) return null;
+    return ultimo;
   }
   function premiDaPad(key, pi, veloce) {
     const ev = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, shiftKey: !!veloce });
@@ -243,7 +249,7 @@
     renderAbbinamento();
   }
   // le etichette dei tasti diventano quelle del pad (A, B, X, Y, LB…), le regole restano da tastiera
-  const PAD_ETICHETTE = { 'Spazio': 'A', '↵': 'A', '1': 'A', '2': 'B', '3': 'X', '4': 'Y', '5': 'LB', '6': 'RB', 'S': 'A', 'N': 'B', '⌫': 'LT', 'Shift': 'RT', 'M': 'View', 'R': 'Menu' };
+  const PAD_ETICHETTE = { 'Spazio': 'A', '↵': 'A', '1': 'A', '2': 'B', '3': 'X', '4': 'Y', '5': 'LB', '6': 'RB', 'S': 'A', 'N': 'B', '⌫': 'LT', 'Shift': 'RT', 'M': 'Y', 'R': 'X' };
   function etichettaPad(el) {
     if (el.classList.contains('pad-fisso') || el.closest('#pannello-regole')) return;
     if (el.dataset.tasto == null) el.dataset.tasto = el.textContent;
@@ -286,6 +292,7 @@
     p.innerHTML = fatti.length >= 2 ? 'Controller abbinati! Premete <span class="kbd pad-fisso" data-pad="A">A</span> per iniziare'
       : fatti.length === 1 ? `Ora ${NOMI[1]}: premi <span class="kbd pad-fisso" data-pad="A">A</span> sul tuo controller. Con un controller solo premete di nuovo <span class="kbd pad-fisso" data-pad="A">A</span> su quello di ${NOMI[0]}.`
       : `Due controller? ${NOMI[0]} preme <span class="kbd pad-fisso" data-pad="A">A</span> sul suo, poi ${NOMI[1]} sul suo. <span class="kbd pad-fisso" data-pad="B">B</span> ricomincia.`;
+    p.innerHTML += `<br><small>Sull'Xbox: tieni premuto <span class="kbd pad-fisso" data-pad="View">View</span> per lo schermo intero, tieni premuto <span class="kbd pad-fisso" data-pad="Menu">Menu</span> per riavere il cursore.</small>`;
   }
   function premutoPad(b, pi, veloce) {
     PAD.ultimo = performance.now();
@@ -1907,7 +1914,7 @@
       <div>
         <h3>Gli eventi del Comandante</h3><ul><li>Ogni 4-5 turni il Comandante gira la sua ruota ed esce una regola speciale per un giro: Turbolenza (comandi invertiti), Happy hour (carta a ogni risposta giusta), Sciopero (dado fino a 3), Volo in ritardo (metà tempo), Vento in coda (due dadi).</li></ul>
         <h3>L'Ultimo volo</h3><ul><li>Quando resta una meta a testa, o qualcuno completa i 6 timbri.</li><li>Domande alternate: vince chi arriva prima a ${PUNTI_FINALE} risposte giuste. Chi ha più timbri parte con un punto.</li><li>Alla fine il Comandante consegna la pagella con i premi della serata.</li></ul>
-        <h3>Tasti</h3><ul><li><span class="kbd">Spazio</span> tira e va avanti, <span class="kbd">←</span> <span class="kbd">→</span> direzione, <span class="kbd">1</span>–<span class="kbd">4</span> rispondi</li><li><span class="kbd">S</span> <span class="kbd">N</span> Scudo, <span class="kbd">M</span> mappa, <span class="kbd">F</span> schermo intero</li><li><span class="kbd">A</span> musica, <span class="kbd">C</span> zittisci il Comandante</li></ul>
+        <h3>Tasti</h3><ul><li><span class="kbd">Spazio</span> tira e va avanti, <span class="kbd">←</span> <span class="kbd">→</span> direzione, <span class="kbd">1</span>–<span class="kbd">4</span> rispondi</li><li><span class="kbd">S</span> <span class="kbd">N</span> Scudo, <span class="kbd">M</span> mappa, <span class="kbd">F</span> schermo intero</li><li><span class="kbd">A</span> musica, <span class="kbd">C</span> zittisci il Comandante</li><li>Col controller: A conferma, A B X Y rispondono, croce per la direzione, LB e RB carte aiuto, LT cancella, RT mirino veloce, Y mappa, X regole. Sull'Xbox tieni premuto View per lo schermo intero e Menu per riavere il cursore.</li></ul>
       </div></div>
       <p style="text-align:center;margin-top:1em"><button class="btn pieno" id="chiudi-regole">Chiudi <span class="kbd">R</span></button></p>`;
     $('#ov-regole').hidden = false;

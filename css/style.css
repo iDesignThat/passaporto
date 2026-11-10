@@ -635,7 +635,8 @@ button:focus-visible, input:focus-visible { outline: 4px solid var(--carta); out
 @media (prefers-reduced-motion: reduce) { .avatar-svg .rossore, .avatar-svg .vena, .avatar-svg .vapore { animation: none; } }
 
 /* ---------- Controller ---------- */
-.barra-pad { display: none; }
+.barra-pad, .solo-pad { display: none; }
+body.modo-pad .setup-piede .solo-pad { display: inline-block; }
 body.modo-pad .barra-tasti:not(.barra-pad) { display: none; }
 body.modo-pad .barra-pad { display: flex; }
 /* tasti del pad con i colori del controller Xbox */
