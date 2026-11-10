@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Passaporto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Lilita+One&display=swap">
+<link rel="stylesheet" href="css/style.css?v=61">
+</head>
+<body>
+<canvas id="cielo" aria-hidden="true"></canvas>
+
+<!-- Schermata iniziale -->
+<section id="s-start" class="schermo" hidden>
+  <h1 class="logo">Passaporto</h1>
+  <p class="start-sotto">Dieci mete, due viaggiatori, un solo biglietto.</p>
+  <div class="start-coppia">
+    <div class="start-gioc" data-g="0"><div class="av" id="start-av-0"></div><div class="nome">Alessandro</div></div>
+    <div class="vs">vs</div>
+    <div class="start-gioc" data-g="1"><div class="av" id="start-av-1"></div><div class="nome">Claudia</div></div>
+  </div>
+  <button class="btn pieno btn-avvia" id="btn-avvia">Avvia gioco <span class="kbd">Spazio</span></button>
+  <p class="avvio-musica" id="avvio-musica" hidden>Clicca in un punto qualsiasi per accendere la musica</p>
+</section>
+
+<!-- Preparazione -->
+<section id="s-setup" class="schermo" hidden>
+  <div class="setup-testa">
+    <div>
+      <h1 class="logo">Passaporto</h1>
+      <p class="sottotitolo">Dieci mete, due viaggiatori, un solo biglietto. Febbraio 2027.</p>
+    </div>
+    <button class="btn" id="btn-regole-setup">Regole</button>
+  </div>
+  <div class="setup-griglia" id="setup-griglia"></div>
+  <div class="setup-piede">
+    <span class="msg" id="setup-msg"></span>
+    <div style="display:flex;gap:1em;flex-wrap:wrap">
+      <button class="btn" id="btn-riprendi" hidden>Riprendi la partita salvata</button>
+      <button class="btn pieno" id="btn-via">Accendi la mappa <span class="kbd">↵</span></button>
+    </div>
+  </div>
+</section>
+
+<!-- Intro: la mappa si accende -->
+<section id="s-intro" class="schermo" hidden>
+  <aside class="intro-lato" data-g="0"></aside>
+  <div class="intro-centro">
+    <div class="cornice"></div>
+    <div id="intro-mappa" class="foglio-mappa" style="inset:calc(var(--u)*1.6) calc(var(--u)*.6) calc(var(--u)*2.2)"></div>
+    <div class="intro-didascalia">
+      <span class="stato" id="intro-stato">Le luci d'Europa si accendono…</span>
+      <button class="btn pieno" id="btn-intro-avanti" hidden>Chi parte per primo? <span class="kbd">Spazio</span></button>
+    </div>
+  </div>
+  <aside class="intro-lato" data-g="1"></aside>
+</section>
+
+<!-- Tabellone -->
+<section id="s-board" class="schermo" hidden>
+  <div class="colonna-gioc"><div class="carta-gioc" data-g="0"></div></div>
+  <div class="centro-board">
+    <svg class="board-svg" id="board" viewBox="-20 -20 1040 1060"></svg>
+    <div class="centro-info">
+      <div class="evento-badge" id="evento-badge" hidden></div>
+      <div class="dadi" id="dadi"></div>
+      <div class="istruzione" id="istruzione"></div>
+      <button class="btn pieno" id="btn-tira">Tira il dado <span class="kbd">Spazio</span></button>
+    </div>
+  </div>
+  <div class="colonna-gioc"><div class="carta-gioc" data-g="1"></div></div>
+  <div class="barra-tasti">
+    <span><span class="kbd">Spazio</span> tira / avanti</span>
+    <span><span class="kbd">←</span><span class="kbd">→</span> direzione</span>
+    <span><span class="kbd">1</span>–<span class="kbd">4</span> risposte</span>
+    <span><span class="kbd">M</span> mappa</span>
+    <span><span class="kbd">R</span> regole</span>
+    <span><span class="kbd">A</span> musica</span>
+    <span><span class="kbd">Q</span><span class="kbd">P</span> duello</span>
+    <span><span class="kbd">5</span><span class="kbd">6</span> carte aiuto</span>
+    <span><span class="kbd">C</span> Comandante</span>
+    <span><span class="kbd">F</span> schermo intero</span>
+  </div>
+</section>
+
+<!-- Finale -->
+<section id="s-final" class="schermo" hidden>
+  <div class="finale-titolo">
+    <h1 class="logo">Ultimo volo</h1>
+    <p>Chi arriva prima a cinque risposte giuste sceglie il gate.</p>
+  </div>
+  <div class="duello" id="duello"></div>
+  <div class="finale-azione">
+    <div class="istruzione" id="finale-istr"></div>
+    <button class="btn pieno" id="btn-finale">Prossima domanda <span class="kbd">Spazio</span></button>
+  </div>
+</section>
+
+<!-- Vittoria -->
+<section id="s-vittoria" class="schermo" hidden>
+  <div class="mappa-wrap" id="vittoria-mappa"></div>
+  <div class="annuncio">
+    <span class="eyebrow">Imbarco completato!</span>
+    <h1 id="vittoria-meta"></h1>
+    <p id="vittoria-sub"></p>
+    <div style="display:flex;gap:1em;margin-top:.6em;flex-wrap:wrap;justify-content:center">
+      <button class="btn pieno" id="btn-pagella">La pagella del Comandante <span class="kbd">Spazio</span></button>
+      <button class="btn" id="btn-rivincita">Nuova partita</button>
+    </div>
+  </div>
+</section>
+
+<!-- Sovrapposizioni -->
+<div class="velo" id="ov-domanda" hidden><div class="pannello" id="pannello-domanda"></div></div>
+<div class="velo" id="ov-mappa" hidden>
+  <div class="pannello pannello-mappa">
+    <div class="titolo-mappa"><h2 id="mappa-titolo"></h2><span class="aiuto" id="mappa-aiuto"></span></div>
+    <div class="contenuto-mappa" id="ov-mappa-svg"></div>
+  </div>
+</div>
+<div class="velo" id="ov-carta" hidden><div class="pannello carta-imprevisto" id="pannello-carta"></div></div>
+<div class="velo" id="ov-msg" hidden><div class="pannello messaggio" id="pannello-msg"></div></div>
+<div class="velo" id="ov-regole" hidden><div class="pannello regole" id="pannello-regole"></div></div>
+
+<!-- Il Comandante Turbolenza: annunci via radio durante la partita -->
+<div id="narratore" class="narratore" hidden aria-live="polite" title="Clicca per chiudere">
+  <div class="narr-av" id="narr-av"></div>
+  <div class="narr-fumetto">
+    <div class="narr-nome">Comandante Turbolenza <span class="narr-onda">in onda</span></div>
+    <p class="narr-testo" id="narr-testo"></p>
+  </div>
+</div>
+
+<div class="angolo-btns">
+  <button id="btn-musica" title="Musica (A)" aria-label="Musica accesa o spenta"><svg viewBox="0 0 24 24" width="60%" height="60%" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg></button>
+  <button id="btn-audio" title="Effetti sonori" aria-label="Effetti sonori accesi o spenti"><svg viewBox="0 0 24 24" width="60%" height="60%" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg></button>
+  <button id="btn-full" title="Schermo intero (F)">⛶</button>
+</div>
+<canvas id="coriandoli" hidden></canvas>
+
+<script src="js/cielo.js?v=61"></script>
+<script src="js/mappa.js?v=61"></script>
+<script src="js/domande.js?v=61"></script>
+<script src="js/domande-extra.js?v=61"></script>
+<script src="js/bandiere.js?v=61"></script>
+<script src="js/effetti.js?v=61"></script>
+<script src="js/battute.js?v=61"></script>
+<script src="js/ritratti.js?v=61"></script>
+<script src="js/avatar.js?v=61"></script>
+<script src="js/gioco.js?v=61"></script>
+</body>
+</html>
