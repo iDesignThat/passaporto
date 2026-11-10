@@ -186,6 +186,11 @@
   const setTasti = m => { tasti = m || {}; };
   document.addEventListener('keydown', e => {
     if (e.repeat) return;
+    if (!e.daPad) {
+      // sull'Xbox il pad manda anche tasti "veri" (frecce, invio): se il pad si è appena mosso li ignoriamo
+      if (performance.now() - PAD.ultimo < 250) { e.preventDefault(); return; }
+      if (PAD.modo) modoPad(false);
+    }
     const inInput = e.target && (e.target.tagName === 'INPUT');
     let k = e.key; if (k.length === 1) k = k.toLowerCase();
     if (inInput) return;
@@ -200,6 +205,121 @@
   function schermoIntero() {
     try { if (!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen(); } catch (e) { }
   }
+
+  // ---------- Controller (pad Xbox e simili) ----------
+  // Ogni pulsante del pad diventa il tasto della tastiera che serve in quel momento.
+  // Con due pad abbinati (schermata iniziale) nei duelli ognuno si prenota con il suo.
+  const PAD = { abbinati: {}, ultimo: -1e9, modo: false, prima: {}, tenuto: {} };
+  // pulsanti standard: 0 A, 1 B, 2 X, 3 Y, 4 LB, 5 RB, 6 LT, 7 RT, 8 View, 9 Menu, 12-15 croce direzionale
+  const TASTI_PAD = {
+    0: ['1', ' ', 's', 'Enter'], 1: ['2', 'n'], 2: ['3'], 3: ['4'],
+    4: ['5'], 5: ['6'], 6: ['Backspace'], 8: ['m'], 9: ['r'],
+    12: ['ArrowUp'], 13: ['ArrowDown'], 14: ['ArrowLeft'], 15: ['ArrowRight'],
+  };
+  const haTasto = k => !!(tasti[k] || tasti[k.toLowerCase()]);
+  const nPadAbbinati = () => Object.keys(PAD.abbinati).length;
+  function tastoPerPad(b, pi) {
+    const g = PAD.abbinati[pi];
+    // duello: con due pad abbinati qualsiasi tasto frontale prenota il proprio giocatore;
+    // con un pad solo in comune LB è Alessandro e RB è Claudia
+    if (tasti.q || tasti.p) {
+      if (g != null && b <= 3) return TASTO_DUELLO[g].toLowerCase();
+      if (g == null && b === 4) return 'q';
+      if (g == null && b === 5) return 'p';
+    }
+    const lista = TASTI_PAD[b]; if (!lista) return null;
+    return lista.find(haTasto) || lista[lista.length - 1];
+  }
+  function premiDaPad(key, pi, veloce) {
+    const ev = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, shiftKey: !!veloce });
+    ev.daPad = true; ev.padGiocatore = PAD.abbinati[pi] ?? -1;
+    document.dispatchEvent(ev);
+  }
+  function modoPad(si) {
+    if (PAD.modo === si) return;
+    PAD.modo = si;
+    document.body.classList.toggle('modo-pad', si);
+    $$('.kbd').forEach(etichettaPad);
+    renderAbbinamento();
+  }
+  // le etichette dei tasti diventano quelle del pad (A, B, X, Y, LB…), le regole restano da tastiera
+  const PAD_ETICHETTE = { 'Spazio': 'A', '↵': 'A', '1': 'A', '2': 'B', '3': 'X', '4': 'Y', '5': 'LB', '6': 'RB', 'S': 'A', 'N': 'B', '⌫': 'LT', 'Shift': 'RT', 'M': 'View', 'R': 'Menu' };
+  function etichettaPad(el) {
+    if (el.classList.contains('pad-fisso') || el.closest('#pannello-regole')) return;
+    if (el.dataset.tasto == null) el.dataset.tasto = el.textContent;
+    const t = el.dataset.tasto;
+    let pad = PAD_ETICHETTE[t];
+    if (t === 'Q' || t === 'P') pad = nPadAbbinati() >= 2 ? 'A' : (t === 'Q' ? 'LB' : 'RB');
+    if (PAD.modo && pad) { el.textContent = pad; el.dataset.pad = pad; }
+    else { el.textContent = t; delete el.dataset.pad; }
+  }
+  new MutationObserver(lista => {
+    if (!PAD.modo) return;
+    for (const m of lista) m.addedNodes.forEach(n => {
+      if (n.nodeType !== 1) return;
+      if (n.classList.contains('kbd')) etichettaPad(n);
+      n.querySelectorAll && n.querySelectorAll('.kbd').forEach(etichettaPad);
+    });
+  }).observe(document.body, { childList: true, subtree: true });
+  let avvisoPad = null;
+  function avvisa(testo) {
+    let el = $('#avviso-pad');
+    if (!el) { el = document.createElement('div'); el.id = 'avviso-pad'; el.className = 'avviso-pad'; document.body.appendChild(el); }
+    el.textContent = testo; el.hidden = false;
+    clearTimeout(avvisoPad); avvisoPad = setTimeout(() => { el.hidden = true; }, 2600);
+  }
+  // schermata iniziale: chi preme A per primo diventa Alessandro, il secondo pad Claudia
+  function abbinaPad(pi) {
+    if (PAD.abbinati[pi] != null) return false;
+    const libero = [0, 1].find(g => !Object.values(PAD.abbinati).includes(g));
+    if (libero == null) return false;
+    PAD.abbinati[pi] = libero;
+    tono(660 + libero * 220, .1, 'triangle', .12);
+    renderAbbinamento();
+    return true;
+  }
+  function renderAbbinamento() {
+    const p = $('#start-pad'); if (!p) return;
+    const fatti = Object.values(PAD.abbinati);
+    [0, 1].forEach(g => { const c = $('#pad-chip-' + g); if (c) { c.hidden = !fatti.includes(g); } });
+    p.hidden = !PAD.modo;
+    p.innerHTML = fatti.length >= 2 ? 'Controller abbinati! Premete <span class="kbd pad-fisso" data-pad="A">A</span> per iniziare'
+      : fatti.length === 1 ? `Ora ${NOMI[1]}: premi <span class="kbd pad-fisso" data-pad="A">A</span> sul tuo controller. Con un controller solo premete di nuovo <span class="kbd pad-fisso" data-pad="A">A</span> su quello di ${NOMI[0]}.`
+      : `Due controller? ${NOMI[0]} preme <span class="kbd pad-fisso" data-pad="A">A</span> sul suo, poi ${NOMI[1]} sul suo. <span class="kbd pad-fisso" data-pad="B">B</span> ricomincia.`;
+  }
+  function premutoPad(b, pi, veloce) {
+    PAD.ultimo = performance.now();
+    if (!PAD.modo) modoPad(true);
+    // abbinamento dei pad nella schermata iniziale
+    if (!$('#s-start').hidden) {
+      if (b === 1) { PAD.abbinati = {}; renderAbbinamento(); return; }
+      if (b === 0 && abbinaPad(pi)) return;
+      if (b === 0 && nPadAbbinati() < 2) PAD.abbinati = {};   // un pad solo: lo usate in due
+    }
+    const key = tastoPerPad(b, pi);
+    if (key) premiDaPad(key, pi, veloce);
+  }
+  addEventListener('gamepadconnected', e => { avvisa(`Controller ${e.gamepad.index + 1} collegato`); modoPad(true); renderAbbinamento(); });
+  addEventListener('gamepaddisconnected', e => { delete PAD.abbinati[e.gamepad.index]; avvisa(`Controller ${e.gamepad.index + 1} scollegato`); renderAbbinamento(); });
+  // si legge il pad 60 volte al secondo con un timer (funziona anche se la pagina non sta disegnando)
+  setInterval(function leggiPad() {
+    const pads = navigator.getGamepads ? navigator.getGamepads() : [];
+    const ora = performance.now();
+    for (const gp of pads) {
+      if (!gp) continue;
+      const prima = PAD.prima[gp.index] = PAD.prima[gp.index] || [];
+      const veloce = !!(gp.buttons[7] && gp.buttons[7].pressed);   // RT tenuto premuto: mirino veloce sulla mappa
+      gp.buttons.forEach((bt, b) => {
+        const giu = bt.pressed, k = gp.index + ':' + b;
+        if (giu && !prima[b]) { PAD.tenuto[k] = ora + 380; premutoPad(b, gp.index, veloce); }
+        // la croce direzionale tenuta premuta ripete (serve per muovere il mirino sulla mappa)
+        else if (giu && b >= 12 && b <= 15 && ora >= PAD.tenuto[k]) { PAD.tenuto[k] = ora + 70; PAD.ultimo = ora; const key = tastoPerPad(b, gp.index); if (key) premiDaPad(key, gp.index, veloce); }
+        if (giu !== !!prima[b]) PAD.ultimo = ora;
+        prima[b] = giu;
+      });
+    }
+
+  }, 16);
 
   // ---------- Comandante Turbolenza (narratore) ----------
   const BATTUTE = window.BATTUTE || {};
@@ -347,6 +467,7 @@
   function schermoStart() {
     mostra('s-start');
     [0, 1].forEach(g => { $('#start-av-' + g).innerHTML = AV.render(AV_DEFAULT[g], 'felice'); });
+    renderAbbinamento();
     avviaMusica();
     const vai = () => { setTasti({}); schermoSetup(); };
     $('#btn-avvia').onclick = vai;
@@ -364,7 +485,7 @@
         <div class="mete-input">
           <label>Le 5 mete di ${NOMI[g]}</label>
           ${[0, 1, 2, 3, 4].map(i => `<div class="campo-meta"><input id="meta-${g}-${i}" autocomplete="off" spellcheck="false" placeholder="Scrivi una città o un'isola" value="${esc(setup.mete[g][i] || '')}"><button type="button" class="caret" tabindex="-1" aria-label="Apri l'elenco dei luoghi">▾</button></div>`).join('')}
-          ${setup.esempio ? '<p class="nota-esempio">Le mete di Claudia sono solo un esempio: sostituitele con le sue. Scrivete e scegliete dall\'elenco.</p>' : ''}
+          ${setup.esempio && g === 1 ? '<p class="nota-esempio">Mete di esempio: scrivete quelle di Claudia.</p>' : ''}
         </div>
       </div>`).join('');
     [0, 1].forEach(disegnaEditor);
@@ -372,7 +493,8 @@
     let salvata = null; try { salvata = JSON.parse(localStorage.getItem(SALVA_PARTITA)); } catch (e) { }
     $('#btn-riprendi').hidden = !(salvata && ['board', 'finale'].includes(salvata.fase));
     $('#setup-msg').textContent = '';
-    setTasti({});
+    // Invio (o A sul pad) fuori dai campi accende la mappa
+    setTasti({ Enter: avviaDaSetup, enter: avviaDaSetup });
   }
   // Tendina dei luoghi (sostituisce il datalist del browser, che filtrava sul testo già scritto)
   const norm = s => String(s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
@@ -1354,6 +1476,8 @@
       };
       const rispondi = i => {
         if (finito || chi < 0 || btns[i].disabled) return;
+        const ev = window.event;
+        if (ev && ev.daPad && ev.padGiocatore >= 0 && ev.padGiocatore !== chi) return;   // il pad dell'altro non vale
         const g = chi;
         if (i === giusta) { btns[i].classList.add('scelta'); return fine(g); }
         btns[i].classList.add('sbagliata'); btns[i].disabled = true; suono.ko();
@@ -1827,7 +1951,7 @@
 
   // Solo per le prove
   window.__passaporto = {
-    get S() { return S; }, get musica() { return { src: musica.currentSrc, paused: musica.paused, volume: +musica.volume.toFixed(2), durata: Math.round(musica.duration), loop: musica.loop, tempo: Math.round(musica.currentTime) }; }, finale: () => controllaFinale(S.turno), imprevisto: () => imprevisto(),
+    get S() { return S; }, get pad() { return PAD; }, get musica() { return { src: musica.currentSrc, paused: musica.paused, volume: +musica.volume.toFixed(2), durata: Math.round(musica.duration), loop: musica.loop, tempo: Math.round(musica.currentTime) }; }, finale: () => controllaFinale(S.turno), imprevisto: () => imprevisto(),
     test: {
       domanda: (D, g = 0) => domanda(D.c, { D, g, badge: 'Controllo bagagli' }),
       messaggio: () => messaggio({ titolo: 'Timbro di Sport e spettacolo', testo: 'Claudia ha una sola meta rimasta ed è intoccabile. Questo timbro vale come vantaggio per la finale.', g: 0, extra: `<div style="width:7em;height:7em">${timbroSvg('spo', 0)}</div>` }),

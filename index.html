@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Lilita+One&display=swap">
-<link rel="stylesheet" href="css/style.css?v=61">
+<link rel="stylesheet" href="css/style.css?v=66">
 </head>
 <body>
 <canvas id="cielo" aria-hidden="true"></canvas>
@@ -17,11 +17,12 @@
   <h1 class="logo">Passaporto</h1>
   <p class="start-sotto">Dieci mete, due viaggiatori, un solo biglietto.</p>
   <div class="start-coppia">
-    <div class="start-gioc" data-g="0"><div class="av" id="start-av-0"></div><div class="nome">Alessandro</div></div>
+    <div class="start-gioc" data-g="0"><div class="av" id="start-av-0"></div><div class="nome">Alessandro</div><div class="pad-chip" id="pad-chip-0" hidden>Controller pronto</div></div>
     <div class="vs">vs</div>
-    <div class="start-gioc" data-g="1"><div class="av" id="start-av-1"></div><div class="nome">Claudia</div></div>
+    <div class="start-gioc" data-g="1"><div class="av" id="start-av-1"></div><div class="nome">Claudia</div><div class="pad-chip" id="pad-chip-1" hidden>Controller pronto</div></div>
   </div>
   <button class="btn pieno btn-avvia" id="btn-avvia">Avvia gioco <span class="kbd">Spazio</span></button>
+  <p class="start-pad" id="start-pad" hidden></p>
   <p class="avvio-musica" id="avvio-musica" hidden>Clicca in un punto qualsiasi per accendere la musica</p>
 </section>
 
@@ -83,6 +84,16 @@
     <span><span class="kbd">C</span> Comandante</span>
     <span><span class="kbd">F</span> schermo intero</span>
   </div>
+  <!-- la stessa barra con i tasti del pad: compare quando si gioca col controller -->
+  <div class="barra-tasti barra-pad">
+    <span><span class="kbd pad-fisso" data-pad="A">A</span> tira / avanti</span>
+    <span><span class="kbd pad-fisso">◀</span><span class="kbd pad-fisso">▶</span> direzione</span>
+    <span><span class="kbd pad-fisso" data-pad="A">A</span><span class="kbd pad-fisso" data-pad="B">B</span><span class="kbd pad-fisso" data-pad="X">X</span><span class="kbd pad-fisso" data-pad="Y">Y</span> risposte</span>
+    <span><span class="kbd pad-fisso" data-pad="LB">LB</span><span class="kbd pad-fisso" data-pad="RB">RB</span> carte aiuto</span>
+    <span><span class="kbd pad-fisso" data-pad="View">View</span> mappa</span>
+    <span><span class="kbd pad-fisso" data-pad="Menu">Menu</span> regole</span>
+    <span><span class="kbd pad-fisso" data-pad="A">A</span> sul tuo pad nei duelli</span>
+  </div>
 </section>
 
 <!-- Finale -->
@@ -140,15 +151,15 @@
 </div>
 <canvas id="coriandoli" hidden></canvas>
 
-<script src="js/cielo.js?v=61"></script>
-<script src="js/mappa.js?v=61"></script>
-<script src="js/domande.js?v=61"></script>
-<script src="js/domande-extra.js?v=61"></script>
-<script src="js/bandiere.js?v=61"></script>
-<script src="js/effetti.js?v=61"></script>
-<script src="js/battute.js?v=61"></script>
-<script src="js/ritratti.js?v=61"></script>
-<script src="js/avatar.js?v=61"></script>
-<script src="js/gioco.js?v=61"></script>
+<script src="js/cielo.js?v=66"></script>
+<script src="js/mappa.js?v=66"></script>
+<script src="js/domande.js?v=66"></script>
+<script src="js/domande-extra.js?v=66"></script>
+<script src="js/bandiere.js?v=66"></script>
+<script src="js/effetti.js?v=66"></script>
+<script src="js/battute.js?v=66"></script>
+<script src="js/ritratti.js?v=66"></script>
+<script src="js/avatar.js?v=66"></script>
+<script src="js/gioco.js?v=66"></script>
 </body>
 </html>
